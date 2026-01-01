@@ -2,19 +2,19 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { BeatmapNote } from "../types";
 
 // This service handles the "AI" part: Converting Audio context/description to Beatmap JSON
-// Note: Real audio processing happens on backend or via WebAudio API analysis -> Text Prompt
-// Here we assume we send a text description of the music to Gemini to get the rhythm pattern.
-
-// Ensure API key is handled correctly as per guidelines
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const generateBeatmapFromDescription = async (songDescription: string): Promise<BeatmapNote[]> => {
-  if (!process.env.API_KEY) {
-      console.warn("No API Key found. Returning empty.");
+  // Lazy initialization: Check API key only when function is called
+  const apiKey = process.env.API_KEY;
+  
+  if (!apiKey) {
+      console.warn("No API Key found in environment variables. Returning empty beatmap.");
       return [];
   }
 
-  // Updated to recommended model for text tasks
+  const ai = new GoogleGenAI({ apiKey });
+
+  // Recommended model for text tasks
   const model = "gemini-3-flash-preview"; 
   
   const systemInstruction = `
