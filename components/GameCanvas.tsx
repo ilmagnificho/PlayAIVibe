@@ -57,7 +57,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onScoreUpdate, onGameEnd }) => 
         ref={containerRef}
         tabIndex={0} // Make div focusable for key events
         onClick={handleFocus}
-        className="rounded-lg overflow-hidden shadow-2xl focus:outline-none focus:ring-2 focus:ring-brand-purple/50 transition-all" 
+        className="w-full h-full rounded-lg overflow-hidden shadow-2xl focus:outline-none focus:ring-2 focus:ring-brand-purple/50 transition-all flex items-center justify-center bg-black" 
     />
   );
 };

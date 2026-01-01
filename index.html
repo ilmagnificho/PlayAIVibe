@@ -6,6 +6,13 @@
     <title>PlayAivibe</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
+      // Polyfill for process.env to prevent crashes in browser environment
+      window.process = {
+        env: {
+          NODE_ENV: 'production'
+        }
+      };
+      
       tailwind.config = {
         theme: {
           extend: {
