@@ -2,21 +2,49 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NeonFlow AI Rhythm</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>PlayAivibe</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                purple: '#8B5CF6',
+                cyan: '#06B6D4',
+                dark: '#050505'
+              }
+            },
+            fontFamily: {
+              mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', "Liberation Mono", "Courier New", 'monospace'],
+            }
+          }
+        }
+      }
+    </script>
     <style>
       body {
         margin: 0;
         padding: 0;
         background-color: #050505;
         overflow: hidden;
+        touch-action: none; /* Prevent touch scrolling/zooming */
+        -webkit-text-size-adjust: 100%;
+      }
+      #game-container {
+        outline: none; /* Remove focus outline */
+        touch-action: none;
       }
       #game-container canvas {
         display: block;
         margin: 0 auto;
         border-radius: 8px;
-        box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+        box-shadow: 0 0 30px rgba(139, 92, 246, 0.2);
+        border: 1px solid rgba(139, 92, 246, 0.1);
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
       }
     </style>
   <script type="importmap">

@@ -12,14 +12,23 @@ export const SPAWN_Y = -50;
 export const LANE_WIDTH = 80;
 export const LANE_START_X = (GAME_WIDTH - (LANE_WIDTH * 4)) / 2 + (LANE_WIDTH / 2);
 
-// Colors
+// PlayAivibe Brand Colors
 export const COLORS = {
-  LANE_0: 0xff4081, // Pink
-  LANE_1: 0x00e5ff, // Cyan
-  LANE_2: 0x00e5ff, // Cyan
-  LANE_3: 0xff4081, // Pink
+  // Lanes 0 and 3 (Outer): Vivid Purple
+  LANE_0: 0x8B5CF6, 
+  LANE_3: 0x8B5CF6,
+  
+  // Lanes 1 and 2 (Inner): Cyan
+  LANE_1: 0x06B6D4, 
+  LANE_2: 0x06B6D4,
+  
   HIT_LINE: 0xffffff,
-  BACKGROUND: 0x000000
+  BACKGROUND: 0x050505, // Very dark grey/black
+  
+  // UI Text Colors
+  TEXT_PERFECT: 0x06B6D4, // Cyan
+  TEXT_GOOD: 0x8B5CF6,    // Purple
+  TEXT_MISS: 0xFF4444
 };
 
 // Input Keys
@@ -31,7 +40,7 @@ export const createPhaserConfig = (parent: string, scene: any): Phaser.Types.Cor
     parent: parent,
     width: GAME_WIDTH,
     height: GAME_HEIGHT,
-    backgroundColor: '#0a0a0a',
+    backgroundColor: '#050505',
     scene: scene,
     physics: {
       default: 'arcade',

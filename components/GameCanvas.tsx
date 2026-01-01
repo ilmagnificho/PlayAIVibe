@@ -10,6 +10,7 @@ interface GameCanvasProps {
 
 const GameCanvas: React.FC<GameCanvasProps> = ({ onScoreUpdate, onGameEnd }) => {
   const gameRef = useRef<Phaser.Game | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Ensure we don't create multiple instances (React 18 Strict Mode double-invokation)
@@ -24,15 +25,14 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onScoreUpdate, onGameEnd }) => 
     gameRef.current = game;
 
     // Pass React callbacks to Scene via registry or direct init
-    // Note: We need to wait for scene to be ready or pass data via Scene.start
-    // Since RhythmScene is the default scene, we use registry or event emitters.
-    // However, for this MVP, we can access the scene after boot or pass via init in a custom flow.
-    // Simplest way for MVP integration:
     game.events.once('ready', () => {
-        // Find the running scene
         const runningScene = game.scene.getScene('RhythmScene') as RhythmScene;
         if (runningScene) {
             runningScene.init({ onScoreUpdate });
+        }
+        // Focus the container automatically when game is ready so keyboard works immediately
+        if (containerRef.current) {
+            containerRef.current.focus();
         }
     });
 
@@ -44,7 +44,22 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onScoreUpdate, onGameEnd }) => 
     };
   }, [onScoreUpdate]);
 
-  return <div id="game-container" className="rounded-lg overflow-hidden shadow-2xl" />;
+  // Handle click to refocus (fixes lost focus if user clicks outside)
+  const handleFocus = () => {
+    if (containerRef.current) {
+        containerRef.current.focus();
+    }
+  };
+
+  return (
+    <div 
+        id="game-container" 
+        ref={containerRef}
+        tabIndex={0} // Make div focusable for key events
+        onClick={handleFocus}
+        className="rounded-lg overflow-hidden shadow-2xl focus:outline-none focus:ring-2 focus:ring-brand-purple/50 transition-all" 
+    />
+  );
 };
 
 export default GameCanvas;

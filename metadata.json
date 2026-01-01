@@ -1,5 +1,5 @@
 {
-  "name": "NeonFlow - AI Rhythm Game",
-  "description": "A next-generation rhythm game engine using Phaser.js and React, featuring AI-generated beatmaps powered by Gemini.",
+  "name": "PlayAivibe",
+  "description": "Feel the AI, Play the Vibe. Next-gen rhythm game powered by Gemini.",
   "requestFramePermissions": []
 }
