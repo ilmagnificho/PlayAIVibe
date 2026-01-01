@@ -6,11 +6,13 @@ import RhythmScene from '../game/scenes/RhythmScene';
 interface GameCanvasProps {
   onScoreUpdate: (score: number, combo: number) => void;
   onGameEnd: () => void;
+  isGameActive: boolean;
 }
 
-const GameCanvas: React.FC<GameCanvasProps> = ({ onScoreUpdate, onGameEnd }) => {
+const GameCanvas: React.FC<GameCanvasProps> = ({ onScoreUpdate, onGameEnd, isGameActive }) => {
   const gameRef = useRef<Phaser.Game | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const sceneRef = useRef<RhythmScene | null>(null);
 
   useEffect(() => {
     // Ensure we don't create multiple instances (React 18 Strict Mode double-invokation)
@@ -18,6 +20,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onScoreUpdate, onGameEnd }) => 
 
     // Initialize Scene
     const scene = new RhythmScene();
+    sceneRef.current = scene;
 
     // Initialize Game
     const config = createPhaserConfig('game-container', scene);
@@ -26,9 +29,8 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onScoreUpdate, onGameEnd }) => 
 
     // Pass React callbacks to Scene via registry or direct init
     game.events.once('ready', () => {
-        const runningScene = game.scene.getScene('RhythmScene') as RhythmScene;
-        if (runningScene) {
-            runningScene.init({ onScoreUpdate });
+        if (sceneRef.current) {
+            sceneRef.current.init({ onScoreUpdate });
         }
         // Focus the container automatically when game is ready so keyboard works immediately
         if (containerRef.current) {
@@ -40,9 +42,21 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onScoreUpdate, onGameEnd }) => 
       if (gameRef.current) {
         gameRef.current.destroy(true);
         gameRef.current = null;
+        sceneRef.current = null;
       }
     };
   }, [onScoreUpdate]);
+
+  // Watch for Active State Change to start game
+  useEffect(() => {
+    if (isGameActive && sceneRef.current) {
+        console.log("React requesting Game Start...");
+        sceneRef.current.startSession();
+        
+        // Ensure focus stays on game when starting
+        if (containerRef.current) containerRef.current.focus();
+    }
+  }, [isGameActive]);
 
   // Handle click to refocus (fixes lost focus if user clicks outside)
   const handleFocus = () => {

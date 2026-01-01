@@ -20,6 +20,10 @@ const App: React.FC = () => {
     setCombo(currentCombo);
   };
 
+  const handleNotImplemented = () => {
+    alert("This feature is coming soon in the next update!");
+  };
+
   return (
     <div className="flex flex-col h-screen bg-brand-dark text-white font-sans overflow-hidden">
       {/* Header */}
@@ -70,38 +74,51 @@ const App: React.FC = () => {
            <GameCanvas 
              onScoreUpdate={handleUpdateScore} 
              onGameEnd={handleGameEnd}
+             isGameActive={isPlaying}
            />
         </div>
 
-        {/* UI Overlay / Controls */}
+        {/* UI Overlay / Controls - Centered */}
         {!isPlaying && (
-          <div className="absolute top-6 left-6 z-10 w-72 p-5 bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl">
-             <div className="flex items-center gap-2 mb-4">
-               <div className="p-1.5 bg-yellow-500/20 rounded-lg">
-                 <Sparkles className="w-4 h-4 text-yellow-400" />
-               </div>
-               <h2 className="text-sm font-bold text-white tracking-wide">Ready to Vibe?</h2>
-             </div>
-             
-             <p className="text-xs text-neutral-400 mb-6 leading-relaxed">
-               Welcome to <span className="text-brand-purple font-bold">PlayAivibe</span>. 
-               The system is attempting to load <code className="bg-white/10 px-1 py-0.5 rounded text-white">sample-map.json</code>.
-               If missing, AI will generate a demo pattern.
-             </p>
-             
-             <div className="space-y-3">
-                <button className="w-full group bg-gradient-to-r from-brand-purple to-indigo-600 hover:from-indigo-500 hover:to-brand-purple transition-all duration-300 py-3 rounded-xl text-sm font-bold shadow-[0_4px_20px_rgba(139,92,246,0.3)] flex items-center justify-center gap-2">
-                  <Play className="w-4 h-4 fill-white" /> Start Session
-                </button>
-                
-                <div className="grid grid-cols-2 gap-3">
-                  <button className="flex items-center justify-center bg-white/5 hover:bg-white/10 transition py-2.5 rounded-lg text-xs font-medium border border-white/5 hover:border-white/20">
-                    <Upload className="w-3.5 h-3.5 mr-2 text-brand-cyan" /> Upload MP3
-                  </button>
-                  <button className="flex items-center justify-center bg-white/5 hover:bg-white/10 transition py-2.5 rounded-lg text-xs font-medium border border-white/5 hover:border-white/20">
-                    <Settings className="w-3.5 h-3.5 mr-2 text-neutral-400" /> Config
-                  </button>
-                </div>
+          <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+             {/* Modal container with pointer-events-auto to allow clicks */}
+             <div className="w-72 p-5 bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl pointer-events-auto">
+                 <div className="flex items-center gap-2 mb-4">
+                   <div className="p-1.5 bg-yellow-500/20 rounded-lg">
+                     <Sparkles className="w-4 h-4 text-yellow-400" />
+                   </div>
+                   <h2 className="text-sm font-bold text-white tracking-wide">Ready to Vibe?</h2>
+                 </div>
+                 
+                 <p className="text-xs text-neutral-400 mb-6 leading-relaxed">
+                   Welcome to <span className="text-brand-purple font-bold">PlayAivibe</span>. 
+                   The system is attempting to load <code className="bg-white/10 px-1 py-0.5 rounded text-white">sample-map.json</code>.
+                   If missing, AI will generate a demo pattern.
+                 </p>
+                 
+                 <div className="space-y-3">
+                    <button 
+                      onClick={handleGameStart}
+                      className="w-full group bg-gradient-to-r from-brand-purple to-indigo-600 hover:from-indigo-500 hover:to-brand-purple transition-all duration-300 py-3 rounded-xl text-sm font-bold shadow-[0_4px_20px_rgba(139,92,246,0.3)] flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                    >
+                      <Play className="w-4 h-4 fill-white" /> Start Session
+                    </button>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <button 
+                        onClick={handleNotImplemented}
+                        className="flex items-center justify-center bg-white/5 hover:bg-white/10 transition py-2.5 rounded-lg text-xs font-medium border border-white/5 hover:border-white/20 cursor-pointer active:scale-95"
+                      >
+                        <Upload className="w-3.5 h-3.5 mr-2 text-brand-cyan" /> Upload MP3
+                      </button>
+                      <button 
+                        onClick={handleNotImplemented}
+                        className="flex items-center justify-center bg-white/5 hover:bg-white/10 transition py-2.5 rounded-lg text-xs font-medium border border-white/5 hover:border-white/20 cursor-pointer active:scale-95"
+                      >
+                        <Settings className="w-3.5 h-3.5 mr-2 text-neutral-400" /> Config
+                      </button>
+                    </div>
+                 </div>
              </div>
           </div>
         )}

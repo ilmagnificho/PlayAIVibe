@@ -17,6 +17,8 @@ export default class RhythmScene extends Phaser.Scene {
   public input!: Phaser.Input.InputPlugin;
   public tweens!: Phaser.Tweens.TweenManager;
   public time!: Phaser.Time.Clock;
+  public make!: Phaser.GameObjects.GameObjectCreator;
+  public textures!: Phaser.Textures.TextureManager;
 
   // Game State
   private notes: BeatmapNote[] = [];
@@ -35,6 +37,7 @@ export default class RhythmScene extends Phaser.Scene {
   private laneEffects: Phaser.GameObjects.Rectangle[] = [];
   private hitLine: Phaser.GameObjects.Rectangle | null = null;
   private scoreCallback: ((score: number, combo: number) => void) | null = null;
+  private statusText: Phaser.GameObjects.Text | null = null;
 
   // Pointers for beatmap processing
   private spawnIndex: number = 0;
@@ -50,21 +53,29 @@ export default class RhythmScene extends Phaser.Scene {
     this.spawnIndex = 0;
     this.activeNotes = [];
     this.useSynthFallback = false;
+    this.isPlaying = false;
   }
 
   preload() {
     // 1. Attempt to load real assets from public folder
     this.load.audio('song', 'song.mp3'); 
-    // We no longer rely on external JSON for the trial to avoid 404s
   }
 
   create() {
+    // CRITICAL FIX: Generate 'flare' texture programmatically to prevent crash
+    if (!this.textures.exists('flare')) {
+        const graphics = this.make.graphics({ x: 0, y: 0, add: false });
+        graphics.fillStyle(0xffffff, 1);
+        graphics.fillCircle(16, 16, 16);
+        graphics.generateTexture('flare', 32, 32);
+        graphics.destroy();
+    }
+
     this.createBackground();
     this.createLanes();
     this.setupInputs();
     
-    // Process Beatmap Data - DIRECTLY USE IMPORTED DATA
-    // This solves the "sample-map.json not found" error permanently
+    // Process Beatmap Data
     this.notes = [...TWINKLE_BEATMAP].sort((a, b) => a.time - b.time);
 
     // Audio Setup
@@ -75,8 +86,49 @@ export default class RhythmScene extends Phaser.Scene {
         this.useSynthFallback = true;
     }
 
-    // Start Overlay
-    this.createStartOverlay();
+    // Status Indicator
+    this.statusText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2, "SYSTEM READY\nWAITING FOR INPUT", {
+        fontSize: '24px',
+        color: '#8B5CF6',
+        align: 'center',
+        fontFamily: 'monospace'
+    }).setOrigin(0.5);
+    
+    this.tweens.add({
+        targets: this.statusText,
+        alpha: 0.5,
+        yoyo: true,
+        repeat: -1,
+        duration: 800
+    });
+  }
+
+  // Called from React via GameCanvas when "Start Session" is clicked
+  public startSession() {
+    if (this.isPlaying) return;
+
+    // Remove status text
+    if (this.statusText) {
+        this.statusText.destroy();
+        this.statusText = null;
+    }
+    
+    // Resume AudioContext if suspended (browser autoplay policy)
+    if (this.sound.context.state === 'suspended') {
+        this.sound.context.resume().then(() => {
+            console.log('AudioContext Resumed');
+        });
+    }
+
+    this.startTime = this.time.now;
+    this.isPlaying = true;
+    
+    if (this.music) {
+        this.music.play();
+    } else {
+        // Just for feedback if no music
+        this.showJudgementText("GO!", COLORS.TEXT_PERFECT);
+    }
   }
 
   update(time: number, delta: number) {
@@ -184,7 +236,6 @@ export default class RhythmScene extends Phaser.Scene {
     // Play Synth Feedback if fallback is on
     if (this.useSynthFallback) {
         // Find closest melody pitch
-        // We look for a key in the map close to this note's time
         let bestTime = -1;
         let minTimeDiff = 0.3;
         
@@ -232,9 +283,6 @@ export default class RhythmScene extends Phaser.Scene {
     this.combo = 0;
     this.updateReactUI();
     this.showJudgementText('MISS', COLORS.TEXT_MISS);
-    
-    // Optional: play miss sound
-    // if (this.useSynthFallback) this.playTone(150, 'miss');
   }
 
   private updateReactUI() {
@@ -244,37 +292,6 @@ export default class RhythmScene extends Phaser.Scene {
   }
 
   // --- Visuals & Setup ---
-
-  private createStartOverlay() {
-    const text = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'CLICK TO START\n(Twinkle Twinkle)', {
-        fontSize: '32px',
-        color: '#8B5CF6',
-        fontStyle: 'bold',
-        align: 'center',
-        shadow: { blur: 10, color: '#8B5CF6', fill: true }
-    }).setOrigin(0.5);
-
-    this.tweens.add({
-        targets: text,
-        scale: 1.1,
-        yoyo: true,
-        repeat: -1,
-        duration: 800
-    });
-
-    this.input.once('pointerdown', () => {
-        text.destroy();
-        this.startGame();
-    });
-  }
-
-  private startGame() {
-    this.startTime = this.time.now;
-    this.isPlaying = true;
-    if (this.music) {
-        this.music.play();
-    }
-  }
 
   private createBackground() {
     const gridColor = 0x8B5CF6;
@@ -311,13 +328,10 @@ export default class RhythmScene extends Phaser.Scene {
   }
 
   private setupInputs() {
-    // 1. Keyboard Input (Phaser internal)
     this.input.keyboard!.on('keydown', (event: KeyboardEvent) => {
-        // CRITICAL FIX: Prevent default browser behavior (zooming, finding, etc) for game keys
         const key = event.key.toUpperCase();
         if (INPUT_KEYS.includes(key)) {
-            event.preventDefault(); // Stop the browser from doing anything else
-            
+            event.preventDefault(); 
             const laneIndex = INPUT_KEYS.indexOf(key);
             if (laneIndex !== -1) {
                 this.handleInput(laneIndex);
@@ -325,7 +339,6 @@ export default class RhythmScene extends Phaser.Scene {
         }
     });
 
-    // 2. Touch/Mouse Input (Clicking lanes)
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
         if (pointer.y > HIT_LINE_Y - 100) { 
             const laneIndex = Math.floor((pointer.x - (LANE_START_X - LANE_WIDTH/2)) / LANE_WIDTH);
